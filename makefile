@@ -2,22 +2,22 @@
 # !!! FIXME: Make this more robust. MUCH more robust.
 # !!! FIXME: ...or at least comment the rest of these options...
 
-ifeq ($(PANDORA),1)
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+  target := linux
+  steamworks := false
+else ifeq ($(PANDORA),1)
   macosx := false
-  CPUARCH := arm
   CC := g++
   LINKER := g++
   steamworks := false
   CFLAGS += -mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -ftree-vectorize -ffast-math -DPANDORA
 else ifeq ($(ODROID),1)
   macosx := false
-  CPUARCH := arm
   CC := g++
   LINKER := g++
   steamworks := false
   CFLAGS += -mcpu=cortex-a9 -mfpu=neon -mfloat-abi=hard -ftree-vectorize -ffast-math -DODROID
-else ifeq ($(linux_x86),1)
-  target := linux_x86
 else
   target := macosx_x86
   steamworks := true
@@ -30,15 +30,13 @@ debug := false
 
 # ----------------------------------------------------- ... bleh.
 
-ifeq ($(strip $(target)),linux_x86)
+ifeq ($(strip $(target)),linux)
   macosx := false
-  CPUARCH := x86
   CC := g++
   LINKER := g++
 endif
 ifeq ($(strip $(target)),macosx_x86)
   macosx := true
-  CPUARCH := x86
   CC := g++
   LINKER := g++
 endif
@@ -277,13 +275,7 @@ ifeq ($(strip $(macosx)),true)
   LIBS += SDL2/libs/macosx/libSDL2-2.0.0.dylib
   STEAMLDFLAGS += steamworks/sdk/redistributable_bin/osx32/libsteam_api.dylib
 else
-  ifeq ($(CPUARCH),arm)
     LIBS += -lSDL2
-  else
-    LIBS += SDL2/libs/linux-x86/libSDL2-2.0.so.0
-    LDFLAGS += -Wl,-rpath,\$$ORIGIN
-    STEAMLDFLAGS += steamworks/sdk/redistributable_bin/linux32/libsteam_api.so
- endif
 endif
 
 ifeq ($(strip $(steamworks)),true)
